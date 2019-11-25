@@ -1,13 +1,44 @@
-var broadcastId = "192728715";
-var userId = "2530839"
+var broadcastId;
+var userId;
 var self = this;
 var newFans;
 var eventsToTrigger;
+var userName = "";
 
 function RunCode()
 {
+    if(FetchBroadcastId() == 1)
+        FetchData();
 
+    //Loop here to establish connection and to be shure that stream is running
 }
+
+function FetchBroadcastId()
+{
+    var proxyUrl = 'https://cors-anywhere.herokuapp.com/',
+    targetUrl = 'https://api.younow.com/php/api/broadcast/info/curId=0/user=' + userName;
+    var json = fetch(proxyUrl + targetUrl)
+  .then(blob => blob.json())
+  .then(data => {
+    json = JSON.stringify(data, null, 2);
+    var done = JSON.parse(json);
+        if(json.length < 1)
+        {
+            console.log("No Data Found");
+        }
+        else
+        {
+            userId = done.userId;
+            broadcastId = done.broadcastId;
+            return 1;
+        }
+  })
+  .catch(e => {
+    console.log("Error with download");
+    return e;
+  });
+}
+
 
 function FetchData()
 {
@@ -75,9 +106,6 @@ function uuidv4() {
         return v.toString(16);
     });
 }
-
-
-
 
 
 //Create Regex for both
