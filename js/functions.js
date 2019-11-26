@@ -3,6 +3,7 @@ var userId;
 var self = this;
 this.peerId = uuidv4();
 this.signalingWS = null;
+var error = false;
 
 var newFans = [];
 var newInvites = [];
@@ -10,7 +11,22 @@ var newInvites = [];
 var eventsToTrigger = [];
 
 
-var userName = "DashPena";
+var userName = "BigbossBozkurt";
+
+function RunCode()
+{
+    console.log("asdf".localeCompare("asdf"))
+     FetchBroadcastId();
+     CastEvents();
+}
+
+async function Retry()
+{
+    console.log("Retrying in 10 seconds");
+    await sleep(10000);
+    error = false;  
+    FetchBroadcastId();
+}
 
 async function FetchBroadcastId()
 {
@@ -25,17 +41,21 @@ async function FetchBroadcastId()
         if(json.length < 1)
         {
             console.log("No Data Found");
-            return;
-            //TODO Wait for a while and retry
+            error = true;
         }
         else
         {
             if(done.errorCode != 0)
             {
                 console.log("User not online or not found");
-                //Wait for a while and retry
+                error = true;
             }
 
+            if(error)
+            {
+                Retry();
+                return;
+            }
             userId = done.userId;
             broadcastId = done.broadcastId;
             console.log("Data Found");
@@ -44,22 +64,29 @@ async function FetchBroadcastId()
         }
   })
   .catch(e => {
-    console.log(e);
-    return e;
+    console.log("Some error occured");
+    Retry();    
   });
 }
 
 
 function FetchData()
 {
-	var patt = /w3schools/i;
-    console.log("Connecting WebSocket");
+    //First Startup Connection:
+    console.log("Connecting WebSocket");	
 
+    this.signalingWS = new WebSocket('wss://signaling.younow-prod.video.propsproject.com/?roomId=' + broadcastId + '&isHost=false&peerId=' + self.peerId);
+   
+    //TODO RESTART AFTER A WHILE!
+    this.signalingWS.onerror= async function(event)
+    { 
+        console.log("Websocket could net be connected,retrying in 10 Seconds");
+        await sleep(10000);
+        FetchData();
+        return;
+    }
 
-	//Find broadcastId somehow, could download json and convert
-	
-	//First Startup Connection:
-	this.signalingWS = new WebSocket('wss://signaling.younow-prod.video.propsproject.com/?roomId=' + broadcastId + '&isHost=false&peerId=' + self.peerId);
+    console.log("Succesfully Connected");
 
 	var pusher = new Pusher('d5b7447226fc2cd78dbb', {
         cluster: "younow"
@@ -67,9 +94,8 @@ function FetchData()
     var channel = pusher.subscribe("public-channel_" + userId);
 
 
-    //For Single likes
+    //For Single likes will be used later for now just console print
     channel.bind('onLikes', function(data) {
-        console.log("TESTLIKE")
         console.log("1 Like");
     });
 
@@ -77,9 +103,11 @@ function FetchData()
     channel.bind('onChat', function(data) {
         for (i = 0; i < data.message.comments.length; i++)
         {
-        	var input = data.message.comments[i].name + "    " + data.message.comments[i].comment;
+            //data.message.comments[i].name + "    "
+        	var input =  data.message.comments[i].comment;
+           //console.log(input);
 
-            
+            //Become Fan Event
             //Doesnt include becoming fan of guest
         	if(input.includes("I became a fan!"))
         	{
@@ -87,6 +115,8 @@ function FetchData()
 
         		for (var name in newFans) 
         		{
+                    console.log(name + " compared with " + data.message.comments[i].name + " with i = " + i);
+                    if(name != 0)
   					if(name.localeCompare(data.message.comments[i].name) == 0);
   						{
                             found = true;
@@ -96,12 +126,13 @@ function FetchData()
 				if(!found)
 				{
 					newFans.push(data.message.comments[i].name);
-					var newEvent = new Event("fans",data.message.comments[i].name,data.message.comments[i].userId,"");
+					var newEvent = new Event("Fan",data.message.comments[i].name,data.message.comments[i].userId,"");
 					eventsToTrigger.push(newEvent);	
-                    console.log("New Event for Fanning added");				 	
+                    newEvent.toString();               
 				}
         	}
 
+            //Invite Event
             if(input.includes("invited") && input.includes("fans to this broadcast."))
             {
                 var found = false;
@@ -119,34 +150,47 @@ function FetchData()
                     }
                     if(!found)
                     {
-                        console.log("Found invite val = " + matches_array[0]);
                         newInvites.push(data.message.comments[i].name);
-                        var newEvent = new Event("invites",data.message.comments[i].name,data.message.comments[i].userId,"");
-                        eventsToTrigger.push(newEvent); 
-                        console.log("New Event for Inivte added");                 
+                        var newEvent = new Event("Invite",data.message.comments[i].name,data.message.comments[i].userId,matches_array[0]);
+                        newEvent.toString();               
                     }
                 }
             }
 
-            //Get Moments
-
-
+            //Moments Event
+            //Invite Event
+            if(input.includes("captured a moment of"))
+            {
+                var newEvent = new Event("Moment",data.message.comments[i].name,data.message.comments[i].userId,"");
+                eventsToTrigger.push(newEvent); 
+                newEvent.toString();               
+            }
         } 
     });
 
     //Get Gifts
     channel.bind('onGift', function(data) {
-        console.log("TESTGIFT");
         if(data.message != "undefined")
         {
              for (i = 0; i < data.message.gifts.length; i++)
             {
-                console.log(data.message.gifts[i].giftId);    
+                console.log("Gift number:" + data.message.gifts[i].giftId);    
             }   
         }
        
     });
 }
+
+async function CastEvents()
+{
+    while(true)
+    {
+        await sleep(3000);
+    }
+}
+
+
+
 
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -156,33 +200,19 @@ function uuidv4() {
     });
 }
 
-class Event {
-  constructor(category,name,id,inviteVal) {
+class Event 
+{
+  constructor(category,name,id,inviteVal)
+    {
     this.category = category;
     this.name = name;
     this.id = id;
     this.inviteVal = inviteVal;
-
-  }
+    }
 }
 
-function Sleep(milliseconds) {
-   return new Promise(resolve => setTimeout(resolve, milliseconds));
-}
+Event.prototype.toString = function(){console.log("Event: " + this.category + " with Name: " + this.name + " with id: " + this.id + " with inviteVal: " + this.inviteVal);}
+
+function sleep(milliseconds) { return new Promise(resolve => setTimeout(resolve, milliseconds)); }
 
 
-//Create queue + for invites and fans make a list of users
-
-//Iterate trough queue with switch(category name, string id , string name,string inviteamount)
-
-
-//Next steps create Animation elements for each one and put all in one big animaiton 
-//and then cast them as gifs, first try with browser in obs if not just in browser
-//Need regex for name + has become a fan! //Cache fan
-//Need regex for capturing
-//Need regex for invites + amount of invites //Cache invite
-
- function RunCode()
-{
-     FetchBroadcastId();
-}
