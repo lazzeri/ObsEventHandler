@@ -11,7 +11,7 @@ var newInvites = [];
 var eventsToTrigger = [];
 
 
-var userName = "BigbossBozkurt";
+var userName = "ItaAmatsu";
 
 function RunCode()
 {
@@ -103,31 +103,27 @@ function FetchData()
     channel.bind('onChat', function(data) {
         for (i = 0; i < data.message.comments.length; i++)
         {
-            //data.message.comments[i].name + "    "
         	var input =  data.message.comments[i].comment;
-           //console.log(input);
+            var foundname = data.message.comments[i].name;
+            var found = false;
 
-            //Become Fan Event
-            //Doesnt include becoming fan of guest
         	if(input.includes("I became a fan!"))
         	{
-        		var found = false;
-
-        		for (var name in newFans) 
+        		for (b = 0; b < newFans.length; b++) 
         		{
-                    console.log(name + " compared with " + data.message.comments[i].name + " with i = " + i);
-                    if(name != 0)
-  					if(name.localeCompare(data.message.comments[i].name) == 0);
-  						{
-                            found = true;
-                            console.log("Replica found for fanning found:" + data.message.comments[i].name);
-                        }
+  					if(newFans[b].localeCompare(foundname) == 0);
+  					{
+                        found = true;
+                        console.log("Replica found for fanning found:" + foundname);
+                    }
 				}
+
 				if(!found)
 				{
-					newFans.push(data.message.comments[i].name);
-					var newEvent = new Event("Fan",data.message.comments[i].name,data.message.comments[i].userId,"");
-					eventsToTrigger.push(newEvent);	
+                    var newEvent = new Event("Fan",foundname,data.message.comments[i].userId,"");
+                    eventsToTrigger.push(newEvent); 
+
+					newFans.push(foundname);
                     newEvent.toString();               
 				}
         	}
@@ -135,30 +131,30 @@ function FetchData()
             //Invite Event
             if(input.includes("invited") && input.includes("fans to this broadcast."))
             {
-                var found = false;
                 var matches_array = input.match(/(\d+)/); 
 
                 if(matches_array.length == 2)
                 {
-                    for (var name in newInvites) 
+                    for (b = 0; b < newInvites.length; b++) 
                     {
-                        if(name.localeCompare(data.message.comments[i].name) == 0);
+                        if(newInvites[b].localeCompare(foundname) == 0);
                         {
                             found = true;
-                            console.log("Replica found for invite found:" + data.message.comments[i].name);
+                            console.log("Replica found for inviting found:" + foundname);
                         }
                     }
+
                     if(!found)
                     {
-                        newInvites.push(data.message.comments[i].name);
-                        var newEvent = new Event("Invite",data.message.comments[i].name,data.message.comments[i].userId,matches_array[0]);
-                        newEvent.toString();               
+                        var newEvent = new Event("Invite",foundname,data.message.comments[i].userId,matches_array[0]);
+                        newInvites.push(foundname);
+
+                        eventsToTrigger.push(newEvent);
+                        newEvent.toString();
                     }
                 }
             }
 
-            //Moments Event
-            //Invite Event
             if(input.includes("captured a moment of"))
             {
                 var newEvent = new Event("Moment",data.message.comments[i].name,data.message.comments[i].userId,"");
@@ -177,7 +173,6 @@ function FetchData()
                 console.log("Gift number:" + data.message.gifts[i].giftId);    
             }   
         }
-       
     });
 }
 
