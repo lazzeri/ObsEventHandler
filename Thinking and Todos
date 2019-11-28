@@ -1,0 +1,20 @@
+Thinking and Todos
+
+Parameters:
+	a.) Position
+
+Invite Moment 
+	b.) Event: 
+			Text + with: % , height: %
+			Profile Picture
+			CustomPicture/Gif
+
+
+Trigger Chooses over switch what build Event to trigger, 
+
+Events are build in start so parameter of event are: 
+
+% is set top and left % of choosen position container
+
+(WholePositionname), (Textbool,height%,width%), (ProfilePicbool,height%,width%, (CustomPicturebool,height%,width%)
+

@@ -11,7 +11,13 @@ var newInvites = [];
 var eventsToTrigger = [];
 
 
-var userName = "ItaAmatsu";
+var userName = "UkuLuca";
+
+function TestAnimation()
+{
+    
+}
+
 
 function RunCode()
 {

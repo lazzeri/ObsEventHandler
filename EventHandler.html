@@ -1,0 +1,65 @@
+<html>
+	<head>	
+		<script src="https://js.pusher.com/5.0/pusher.min.js"></script>
+		<script src="js/functions.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<style>
+		#Container	
+		{
+			width: 1408px;
+			height: 792px;
+			background: #C6BABA;
+			position: relative;
+		}
+
+		.Box
+		{
+			background: #6FC0C6;
+			height: 200px;
+			width: 200px;
+			position: absolute;
+		}
+
+		#Middle
+		{
+			top: 50%;
+    		left: 50%;
+		}
+
+		#UpperLeft
+		{
+  			top: 8px;
+  			left: 16px;
+		}
+
+		#UpperRight
+		{
+  			top: 8px;
+  			right: 16px;
+		}
+
+		#LowerLeft
+		{
+  			bottom: 8px;
+  			left: 16px;
+		}
+
+		#LowerRight
+		{
+  			bottom: 8px;
+  			right: 16px;
+		}
+	</style>
+	</head>
+	<body onload="RunCode();">
+		<div id="Container"> 
+			<div class="Box" id="Middle"> </div>
+			<div class="Box" id="UpperLeft"> </div>
+			<div class="Box" id="UpperRight"> </div>
+			<div class="Box" id="LowerLeft"> </div>
+			<div class="Box" id="LowerRight"> </div>
+		</div>
+	<button onclick="TestAnimation();">Click me</button>
+
+	</body>
+</html>
