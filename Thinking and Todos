@@ -16,5 +16,14 @@ Events are build in start so parameter of event are:
 
 % is set top and left % of choosen position container
 
-(WholePositionname), (Textbool,height%,width%), (ProfilePicbool,height%,width%, (CustomPicturebool,height%,width%)
+(WholePositionname), (Textbool,height%,width%), (ProfilePicbool,height%,width%, (CustomPicturebool,height%,width%,size)
+
+
+
+First Test Each individualy with example
+
+Then Test All together see if it works
+
+
+TODO: Change Capture Event such that it checks if the last person of the capture is not the same as the one before the reduce abusing the event
 

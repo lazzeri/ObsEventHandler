@@ -4,27 +4,98 @@ var self = this;
 this.peerId = uuidv4();
 this.signalingWS = null;
 var error = false;
+var lastmoment = "";
 
 var newFans = [];
 var newInvites = [];
 
 var eventsToTrigger = [];
 
+var userName = "MattyQueenBee";
+var waitingbetweenanimations = 3;
+//CONSTRUCTORS
 
-var userName = "UkuLuca";
-
-function TestAnimation()
+class AnimationStrucutre 
 {
-    
+    //Picture with ending(e.g pic.jpg), Scalse  e.g. 0.5
+  constructor(timeinsec,textbool,picbool,userpicbool,mainpos,textfont,textsize,text,textposx,textposy,picturename,pictureposx,pictureposy,picturewidthx,picturewidthy,picturescale,userpicposx,userpicposy,userpicscale,userId)
+    {
+        this.timeinsec = timeinsec;
+        this.textbool = textbool;
+        this.picbool = picbool;
+        this.userpicbool = userpicbool;
+        this.mainpos = mainpos;
+        this.textfont = textfont;
+        this.textsize = textsize;
+        this.text = text;
+        this.textposx = textposx;
+        this.textposy = textposy;
+        this.picturename = picturename;
+        this.pictureposx = pictureposx;
+        this.pictureposy = pictureposy;
+        this.picturewidthx = picturewidthx;
+        this.picturewidthy = picturewidthy;
+        this.picturescale = picturescale;
+        this.userpicposx = userpicposx;
+        this.userpicposy = userpicposy;
+        this.userpicscale = userpicscale;
+        this.userId = userId;
+    }
 }
 
 
-function RunCode()
+class Event 
 {
-    console.log("asdf".localeCompare("asdf"))
-     FetchBroadcastId();
-     CastEvents();
+  constructor(category,name,id,inviteVal)
+    {
+    this.category = category;
+    this.name = name;
+    this.id = id;
+    this.inviteVal = inviteVal;
+    }
 }
+
+
+
+//CONSTRUCTS FOR ANIMATIONS
+async function RunCode()
+{
+    FetchBroadcastId();
+    CastEvents();
+}
+
+
+async function CastEvents()
+{
+    while(true)
+    {
+        if(eventsToTrigger.length != 0)
+        {
+            var totrigger = eventsToTrigger.shift();
+
+            switch(totrigger.category)
+            {
+                    case "Invite":
+                        var InviteAnimation = new AnimationStrucutre(8,true,true,false,"LowerRight",'"Times New Roman", Times, serif',25,"InviteTest",5,5,"testpic.gif",5,5,400,400,1,0,0,1,"12345");
+                        await Animation(InviteAnimation);
+                    break;
+
+                    case "Moment":
+                        var MomentAnimation = new AnimationStrucutre(8,true,true,false,"LowerRight",'"Times New Roman", Times, serif',25,"MomentTest",5,5,"testpic.gif",5,5,400,400,1,0,0,1,"12345");
+                        await Animation(MomentAnimation);
+                    break;
+                    case "Fan":
+                        var FanAnimation = new AnimationStrucutre(8,true,true,false,"LowerRight",'"Times New Roman", Times, serif',25,"FanTest",5,5,"testpic.gif",5,5,400,400,1,0,0,1,"12345");
+                        await Animation(FanAnimation);
+                    break;
+            }
+            await sleep(2000);
+        }
+        await sleep(2000);
+    }
+}
+
+
 
 async function Retry()
 {
@@ -163,13 +234,22 @@ function FetchData()
 
             if(input.includes("captured a moment of"))
             {
-                var newEvent = new Event("Moment",data.message.comments[i].name,data.message.comments[i].userId,"");
-                eventsToTrigger.push(newEvent); 
-                newEvent.toString();               
+                if(lastmoment.localeCompare(foundname) != 0)
+                {
+                    lastmoment = foundname;
+                    var newEvent = new Event("Moment",data.message.comments[i].name,data.message.comments[i].userId,"");
+                    eventsToTrigger.push(newEvent); 
+                    newEvent.toString();  
+                }
+                else
+                {
+                    console.log("Repeated Moment captured");
+                }
+
+                             
             }
         } 
     });
-
     //Get Gifts
     channel.bind('onGift', function(data) {
         if(data.message != "undefined")
@@ -182,16 +262,82 @@ function FetchData()
     });
 }
 
-async function CastEvents()
+async function Animation(animStruct)
 {
-    while(true)
+    console.log("START");
+    if(animStruct.picbool)
     {
-        await sleep(3000);
+        var Picture = document.createElement("div");
+        Picture.id = "CustomPicture";
+        Picture.style.position = "absolute";
+    
+        //Variable
+        Picture.style.height = animStruct.picturewidthy+"px"; 
+        Picture.style.width = animStruct.picturewidthx+"px"; 
+        Picture.style.transform = "scale("+ animStruct.picturescale + ")";
+        Picture.style.backgroundImage = "url('img/"+ animStruct.picturename +"')";
+        Picture.style.top = animStruct.pictureposy+"px";
+        Picture.style.left = animStruct.picturepox+ "px";
+        
+        document.getElementById(animStruct.mainpos).appendChild(Picture);
     }
+
+    if(animStruct.textbool)
+    {
+        var Text = document.createElement("div");
+        Text.id = "Text";
+        Text.style.position = "absolute";
+    
+        //Variable
+        Text.innerHTML = animStruct.text;
+        Text.style.top = animStruct.textposx + "px";
+        Text.style.left = animStruct.textposy + "px";
+        Text.style.font.family = animStruct.textfont;
+        Text.style.font.size = animStruct.textsize + "px";
+    
+        document.getElementById(animStruct.mainpos).appendChild(Text);
+    }
+
+    if(animStruct.userpicbool)
+    {
+        var UserPicture = document.createElement("div");
+        UserPicture.id = "UserPicture";
+        UserPicture.style.position = "absolute";
+        UserPicture.style.objectFit= "contain";
+    
+        UserPicture.style.backgroundImage = "https://ynassets.younow.com/user/live/" +animStruct.userId + "/" + animStruct.userId + ".jpg"; 
+        UserPicture.style.height = "100px"; 
+        UserPicture.style.width = "100px"; 
+        UserPicture.style.transform = "scale("+ animStruct.userpicscale + ")";
+        UserPicture.style.top = animStruct.userpicposy+"px";
+        UserPicture.style.left = animStruct.userwidthxy+"px";
+        document.getElementById(animStruct.mainpos).appendChild(UserPicture);
+    }
+
+    await sleep(animStruct.timeinsec * 1000);
+    
+    if(animStruct.userpicbool)
+    {
+        var UserPicture = document.getElementById("UserPicture");
+        UserPicture.parentNode.removeChild(UserPicture);    
+    }
+
+
+    if(animStruct.picbool)
+    {
+    var Picture = document. getElementById("Text");
+    Picture.parentNode.removeChild(Picture);
+    }
+ 
+
+    if(animStruct.textbool)
+    {
+    var Text = document.getElementById("CustomPicture");
+    Text.parentNode.removeChild(Text);
+    }
+
+    console.log("DONE");
 }
-
-
-
 
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -201,19 +347,26 @@ function uuidv4() {
     });
 }
 
-class Event 
-{
-  constructor(category,name,id,inviteVal)
-    {
-    this.category = category;
-    this.name = name;
-    this.id = id;
-    this.inviteVal = inviteVal;
-    }
-}
 
 Event.prototype.toString = function(){console.log("Event: " + this.category + " with Name: " + this.name + " with id: " + this.id + " with inviteVal: " + this.inviteVal);}
 
 function sleep(milliseconds) { return new Promise(resolve => setTimeout(resolve, milliseconds)); }
 
+function AddFan()
+{
+    var newEvent = new Event("Fan","TestName","","");
+    eventsToTrigger.push(newEvent); 
+}
 
+function AddInvite()
+{
+    var newEvent = new Event("Invite","TestName","","");
+    eventsToTrigger.push(newEvent); 
+}
+
+
+function AddMoment()
+{
+    var newEvent = new Event("Moment","TestName","","");
+    eventsToTrigger.push(newEvent); 
+}
